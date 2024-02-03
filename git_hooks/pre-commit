@@ -1,0 +1,8 @@
+cp git_hooks/pre-commit .git/hooks/pre-commit
+
+go clean && go build -o precommit-build-test && go test
+rm precommit-build-test
+
+cd examples
+go clean && go build -o precommit-build-test && go test
+rm precommit-build-test
