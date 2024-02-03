@@ -1,6 +1,4 @@
-package golang_test_framework
-
-import "testing"
+package lib
 
 type Assertions interface {
 	Log(...any)
@@ -12,10 +10,10 @@ type Assertions interface {
 
 type assertions struct {
 	testName string
-	*testing.T
+	T
 }
 
-func createAssertions(testName string, t *testing.T) Assertions {
+func createAssertions(testName string, t T) Assertions {
 	return &assertions{testName, t}
 }
 

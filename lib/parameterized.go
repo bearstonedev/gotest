@@ -1,16 +1,16 @@
-package golang_test_framework
+package lib
 
 import (
 	"strconv"
 	"testing"
 )
 
-func createParameterized(t *testing.T) *parameterized {
+func createParameterized(t T) *parameterized {
 	return &parameterized{t, make([]scenario, 0)}
 }
 
 type parameterized struct {
-	*testing.T
+	T
 	scenarios []scenario
 }
 

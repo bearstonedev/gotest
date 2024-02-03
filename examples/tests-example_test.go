@@ -1,7 +1,6 @@
-package golang_test_framework_example
+package examples
 
 import (
-	. "github.com/bearstonedev/golang-test-framework"
 	"testing"
 )
 

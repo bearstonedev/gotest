@@ -1,21 +1,29 @@
-package golang_test_framework
+package lib
 
 import (
 	"testing"
 )
 
-type suite struct {
-	*testing.T
+type T interface {
+	Parallel()
+	Helper()
+	Log(...any)
+	FailNow()
+	Run(name string, f func(t *testing.T)) bool
 }
 
-func Tests(t *testing.T) TestSuite {
-	t.Parallel()
-	return &suite{t}
+type suite struct {
+	T
 }
 
 type TestSuite interface {
 	Test(string, func(Assertions)) TestSuite
 	Scenarios() Parameterized
+}
+
+func Tests(t T) TestSuite {
+	t.Parallel()
+	return &suite{t}
 }
 
 func (s *suite) Test(name string, test func(Assertions)) TestSuite {

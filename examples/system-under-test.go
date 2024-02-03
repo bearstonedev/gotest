@@ -1,4 +1,4 @@
-package golang_test_framework_example
+package examples
 
 type systemUnderTest struct{}
 
