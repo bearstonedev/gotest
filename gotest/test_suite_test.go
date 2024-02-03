@@ -1,7 +1,7 @@
-package lib_test
+package gotest_test
 
 import (
-	. "github.com/bearstonedev/gotest/lib"
+	"github.com/bearstonedev/gotest"
 	"testing"
 )
 
@@ -10,7 +10,7 @@ func TestTests(realTOuter *testing.T) {
 	realTOuter.Run("should create suite", func(realTInner *testing.T) {
 		realTInner.Parallel()
 		mockT := mockTesting(realTInner)
-		testSuite := Tests(mockT)
+		testSuite := gotest.Tests(mockT)
 		if testSuite == nil {
 			logAndFail(realTInner, "testObj is nil")
 		}

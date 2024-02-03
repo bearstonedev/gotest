@@ -1,4 +1,4 @@
-package lib
+package gotest
 
 type Assertions interface {
 	Log(...any)

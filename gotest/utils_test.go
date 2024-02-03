@@ -1,7 +1,7 @@
-package lib_test
+package gotest_test
 
 import (
-	gotest "github.com/bearstonedev/gotest/lib"
+	"github.com/bearstonedev/gotest"
 	"testing"
 )
 
