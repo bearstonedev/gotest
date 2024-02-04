@@ -2,6 +2,7 @@ package gotest_test
 
 import (
 	"github.com/bearstonedev/gotest"
+	"slices"
 	"testing"
 )
 
@@ -61,7 +62,7 @@ func mockTesting(t *testing.T) *tMock {
 	return &tMock{t, make(map[string]*call)}
 }
 
-func (mock *tMock) verifyCallCount(callName string) {
+func (mock *tMock) shouldBeCalled(callName string) {
 	mock.real.Helper()
 
 	theCall := mock.calls[callName]
@@ -71,6 +72,30 @@ func (mock *tMock) verifyCallCount(callName string) {
 
 	if theCall.count != 1 {
 		mock.logAndFail("Incorrect count for:", callName, "count:", theCall.count)
+	}
+}
+
+func (mock *tMock) shouldBeCalledWith(callName string, args ...any) {
+	mock.shouldBeCalled(callName)
+
+	if len(mock.calls[callName].args) != len(args) {
+		mock.logAndFail(callName, "was called with too few args", args, "Wanted:", len(args), "got:", len(mock.calls[callName].args))
+	}
+
+	for index, arg := range args {
+		if mock.calls[callName].args[index] != arg {
+			mock.logAndFail(callName, "was not called with", arg)
+		}
+	}
+}
+
+func (mock *tMock) shouldBeCalledWithSome(callName string, args ...any) {
+	mock.shouldBeCalled(callName)
+
+	for _, arg := range args {
+		if !slices.Contains(mock.calls[callName].args, arg) {
+			mock.logAndFail(callName, "was not called with", arg)
+		}
 	}
 }
 
