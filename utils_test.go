@@ -32,6 +32,7 @@ func (mock *tMock) FailNow() {
 
 func (mock *tMock) Run(name string, f func(t *testing.T)) bool {
 	mock.trackCall("Run", name, f)
+	f(nil)
 	return true
 }
 
@@ -62,7 +63,7 @@ func mockTesting(t *testing.T) *tMock {
 	return &tMock{t, make(map[string]*call)}
 }
 
-func (mock *tMock) shouldBeCalled(callName string) {
+func (mock *tMock) shouldBeCalledTimes(times int, callName string) {
 	mock.real.Helper()
 
 	theCall := mock.calls[callName]
@@ -70,9 +71,13 @@ func (mock *tMock) shouldBeCalled(callName string) {
 		mock.logAndFail(callName, "was never called.")
 	}
 
-	if theCall.count != 1 {
-		mock.logAndFail("Incorrect count for:", callName, "count:", theCall.count)
+	if theCall.count != times {
+		mock.logAndFail("Incorrect call count for:", callName, "wanted:", times, "got:", theCall.count)
 	}
+}
+
+func (mock *tMock) shouldBeCalled(callName string) {
+	mock.shouldBeCalledTimes(1, callName)
 }
 
 func (mock *tMock) shouldBeCalledWith(callName string, args ...any) {

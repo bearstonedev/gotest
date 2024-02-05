@@ -5,27 +5,36 @@ import (
 	"testing"
 )
 
-func TestTests(realTOuter *testing.T) {
-	realTOuter.Parallel()
-	realTOuter.Run("should create suite", func(realTInner *testing.T) {
-		realTInner.Parallel()
-		mockT := mockTesting(realTInner)
-		testSuite := gotest.Tests(mockT)
-		if testSuite == nil {
-			logAndFail(realTInner, "testObj is nil")
-		}
+func TestRunnerOrchestration(t *testing.T) {
+	t.Parallel()
+	t.Run("should run tests automatically and in parallel", func(tt *testing.T) {
+		tt.Parallel()
+		m := mockTesting(tt)
+		configurableRunner := gotest.Tests(m).(gotest.ConfigurableTestRunner)
+		m.shouldBeCalled("Parallel")
 
-		mockT.shouldBeCalled("Parallel")
-	})
-	realTOuter.Run("should create a test", func(realTInner *testing.T) {
-		realTInner.Parallel()
-		mockTOuter := mockTesting(realTInner)
-		testName := "this is a test name"
-		timesTestFuncCalled := 0
-		testFunc := func(assertions gotest.Assertions) {
-			timesTestFuncCalled++
+		var mockList []*tMock
+		testsQueuedCount := 0
+		configurableRunner.ChangeTestRunnerStrategy(func(_ gotest.T, name string, test gotest.TestBody) {
+			mm := mockTesting(tt)
+			mockList = append(mockList, mm)
+			testsQueuedCount++
+			gotest.DefaultRunnerStrategy(mm, name, test)
+		})
+
+		sampleTest := func(assert gotest.Assertions) {
+			assert.Equal("yes", "no")
 		}
-		gotest.Tests(mockTOuter).Test(testName, testFunc)
-		mockTOuter.shouldBeCalledWithSome("Run", testName)
+		configurableRunner.
+			Test("a test", sampleTest).
+			Test("another test", sampleTest)
+
+		m.shouldBeCalledTimes(testsQueuedCount, "Run")
+		for _, mm := range mockList {
+			mm.shouldBeCalledTimes(2, "Helper")
+			mm.shouldBeCalled("Parallel")
+			mm.shouldBeCalled("Log")
+			mm.shouldBeCalled("FailNow")
+		}
 	})
 }

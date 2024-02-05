@@ -4,38 +4,56 @@ import (
 	"testing"
 )
 
+type TestRunner interface {
+	Test(string, TestBody) TestRunner
+	Scenarios() Parameterized
+}
+
+func Tests(t T) TestRunner {
+	t.Parallel()
+	return &runner{t, DefaultRunnerStrategy}
+}
+
+type runner struct {
+	T
+	runTest TestRunnerStrategy
+}
+
+type TestBody func(Assertions)
+
+func (i *runner) Test(name string, test TestBody) TestRunner {
+	i.Run(name, func(t *testing.T) {
+		i.runTest(t, name, test)
+	})
+	return i
+}
+
+func (i *runner) Scenarios() Parameterized {
+	return createParameterized(i.T)
+}
+
+type ConfigurableTestRunner interface {
+	TestRunner
+	ChangeTestRunnerStrategy(TestRunnerStrategy)
+}
+
+func (i *runner) ChangeTestRunnerStrategy(strategy TestRunnerStrategy) {
+	i.runTest = strategy
+}
+
+type TestRunnerStrategy func(T, string, TestBody)
+
+func DefaultRunnerStrategy(t T, name string, test TestBody) {
+	asserts := createAssertions(name, t)
+	t.Parallel()
+	t.Helper()
+	test(asserts)
+}
+
 type T interface {
 	Parallel()
 	Helper()
 	Log(...any)
 	FailNow()
 	Run(name string, f func(t *testing.T)) bool
-}
-
-type suite struct {
-	T
-}
-
-type TestSuite interface {
-	Test(string, func(Assertions)) TestSuite
-	Scenarios() Parameterized
-}
-
-func Tests(t T) TestSuite {
-	t.Parallel()
-	return &suite{t}
-}
-
-func (s *suite) Test(name string, test func(Assertions)) TestSuite {
-	s.Run(name, func(t *testing.T) {
-		asserts := createAssertions(name, t)
-		t.Parallel()
-		t.Helper()
-		test(asserts)
-	})
-	return s
-}
-
-func (s *suite) Scenarios() Parameterized {
-	return createParameterized(s.T)
 }
