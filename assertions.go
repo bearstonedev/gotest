@@ -1,11 +1,13 @@
 package gotest
 
+import "github.com/google/go-cmp/cmp"
+
 type Assertions interface {
 	Log(...any)
 	Equal(any, any)
 	NotEqual(any, any)
-	True(func() bool, ...any)
-	False(func() bool, ...any)
+	True(bool, ...any)
+	False(bool, ...any)
 }
 
 type assertions struct {
@@ -19,7 +21,7 @@ func createAssertions(testName string, t T) Assertions {
 
 func (a *assertions) Equal(lhs any, rhs any) {
 	a.Helper()
-	if lhs != rhs {
+	if !cmp.Equal(lhs, rhs) {
 		a.Log(a.testName, "Expected", lhs, "to be equal to", rhs)
 		a.FailNow()
 	}
@@ -27,23 +29,30 @@ func (a *assertions) Equal(lhs any, rhs any) {
 
 func (a *assertions) NotEqual(lhs any, rhs any) {
 	a.Helper()
-	if lhs == rhs {
+	if cmp.Equal(lhs, rhs) {
 		a.Log(a.testName, "Expected", lhs, "not to be equal to", rhs)
 		a.FailNow()
 	}
 }
 
-func (a *assertions) True(test func() bool, message ...any) {
+func (a *assertions) True(test bool, message ...any) {
 	a.Helper()
-	if !test() {
-		a.Log(a.testName, message)
+	if !test {
+		messageWithPrefix := a.prependTestName(&message)
+		a.Log(*messageWithPrefix...)
 		a.FailNow()
 	}
 }
 
-func (a *assertions) False(test func() bool, message ...any) {
+func (a *assertions) prependTestName(message *[]any) *[]any {
+	prefix := &[]any{"Test", "\"" + a.testName + "\"", "failed:"}
+	messageWithPrefix := append(*prefix, *message...)
+	return &messageWithPrefix
+}
+
+func (a *assertions) False(test bool, message ...any) {
 	a.Helper()
-	if test() {
+	if test {
 		a.Log(a.testName, message)
 		a.FailNow()
 	}

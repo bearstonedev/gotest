@@ -10,3 +10,5 @@ retract (
 	v0.1.1 // Published in error.
 	v0.1.0 // Published in error.
 )
+
+require github.com/google/go-cmp v0.6.0

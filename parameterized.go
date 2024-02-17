@@ -2,15 +2,21 @@ package gotest
 
 import (
 	"strconv"
+	"strings"
 	"testing"
 )
 
-func createParameterized(t T) *parameterized {
-	return &parameterized{t, make([]scenario, 0)}
+type Parameterized interface {
+	Scenario(string, ...any) Parameterized
+	Test(func(Assertions, []any)) TestRunner
+}
+
+func createParameterized(runner *runner) *parameterized {
+	return &parameterized{runner, make([]scenario, 0)}
 }
 
 type parameterized struct {
-	T
+	*runner
 	scenarios []scenario
 }
 
@@ -19,23 +25,12 @@ type scenario struct {
 	args []any
 }
 
-type Parameterized interface {
-	Scenario(...any) Parameterized
-	NamedScenario(string, ...any) Parameterized
-	Test(func(Assertions, []any))
-}
-
-func (p *parameterized) Scenario(args ...any) Parameterized {
-	p.scenarios = append(p.scenarios, scenario{nil, args})
-	return p
-}
-
-func (p *parameterized) NamedScenario(name string, args ...any) Parameterized {
+func (p *parameterized) Scenario(name string, args ...any) Parameterized {
 	p.scenarios = append(p.scenarios, scenario{&name, args})
 	return p
 }
 
-func (p *parameterized) Test(body func(Assertions, []any)) {
+func (p *parameterized) Test(body func(Assertions, []any)) TestRunner {
 	p.Helper()
 
 	parameterCount := 0
@@ -48,7 +43,7 @@ func (p *parameterized) Test(body func(Assertions, []any)) {
 
 	for testNumber, testScenario := range p.scenarios {
 		var name string
-		if testScenario.name == nil {
+		if len(strings.TrimSpace(*testScenario.name)) == 0 {
 			name = "Test #" + strconv.Itoa(testNumber)
 		} else {
 			name = *testScenario.name
@@ -59,10 +54,10 @@ func (p *parameterized) Test(body func(Assertions, []any)) {
 			asserts := createAssertions(name, t)
 			t.Parallel()
 			t.Helper()
-			asserts.True(func() bool {
-				return len(testScenarioCopy.args) == parameterCount
-			}, "Parameter count for scenario doesn't match prior scenarios.")
+			asserts.True(len(testScenarioCopy.args) == parameterCount, "Parameter count for scenario doesn't match prior scenarios.")
 			body(asserts, testScenarioCopy.args)
 		})
 	}
+
+	return p.runner
 }

@@ -1,31 +1,31 @@
-package gotest_test
+package gotest
 
 import (
-	"github.com/bearstonedev/gotest"
 	"testing"
 )
 
-func TestRunnerOrchestration(t *testing.T) {
+func TestRunner_Orchestration(t *testing.T) {
 	t.Parallel()
 	t.Run("should run tests automatically and in parallel", func(tt *testing.T) {
 		tt.Parallel()
 		m := mockTesting(tt)
-		configurableRunner := gotest.Tests(m).(gotest.ConfigurableTestRunner)
+		configurableRunner := Tests(m).(ConfigurableTestRunner)
 		m.shouldBeCalled("Parallel")
 
 		var mockList []*tMock
 		testsQueuedCount := 0
-		configurableRunner.ChangeTestRunnerStrategy(func(_ gotest.T, name string, test gotest.TestBody) {
+		configurableRunner.ChangeTestRunnerStrategy(func(_ T, name string, test TestBody) {
 			mm := mockTesting(tt)
 			mockList = append(mockList, mm)
 			testsQueuedCount++
-			gotest.DefaultRunnerStrategy(mm, name, test)
+			DefaultRunnerStrategy(mm, name, test)
 		})
+		sut := configurableRunner.(TestRunner)
 
-		sampleTest := func(assert gotest.Assertions) {
+		sampleTest := func(assert Assertions) {
 			assert.Equal("yes", "no")
 		}
-		configurableRunner.
+		sut.
 			Test("a test", sampleTest).
 			Test("another test", sampleTest)
 

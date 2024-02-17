@@ -1,116 +1,135 @@
-package gotest_test
+package gotest
 
 import (
-	"github.com/bearstonedev/gotest"
+	"github.com/google/go-cmp/cmp"
 	"slices"
 	"testing"
 )
 
 type call struct {
 	count int
-	args  []any
+	args  *[]any
 }
 
 type tMock struct {
-	real  *testing.T
-	calls map[string]*call
+	real     T
+	allCalls map[string]*call
 }
 
-var _ gotest.T = (*tMock)(nil)
+var _ T = (*tMock)(nil)
 
-func (mock *tMock) Helper() {
-	mock.incrementCallCount("Helper")
+func (m *tMock) Error(args ...any) {
+	m.trackCall("Error", args)
 }
 
-func (mock *tMock) Log(a ...any) {
-	mock.trackCall("Log", a)
+func (m *tMock) Helper() {
+	m.incrementCallCount("Helper")
 }
 
-func (mock *tMock) FailNow() {
-	mock.incrementCallCount("FailNow")
+func (m *tMock) Log(a ...any) {
+	m.trackCall("Log", a...)
 }
 
-func (mock *tMock) Run(name string, f func(t *testing.T)) bool {
-	mock.trackCall("Run", name, f)
+func (m *tMock) FailNow() {
+	m.incrementCallCount("FailNow")
+}
+
+func (m *tMock) Run(name string, f func(t *testing.T)) bool {
+	m.trackCall("Run", name, f)
 	f(nil)
 	return true
 }
 
-func (mock *tMock) Parallel() {
-	mock.incrementCallCount("Parallel")
+func (m *tMock) Parallel() {
+	m.incrementCallCount("Parallel")
 }
 
-func (mock *tMock) incrementCallCount(calledName string) {
-	mock.trackCall(calledName, nil)
+func (m *tMock) incrementCallCount(calledName string) {
+	m.trackCall(calledName, nil)
 }
 
-func (mock *tMock) trackCall(calledName string, args ...any) {
-	maybe := mock.calls[calledName]
-	if maybe == nil {
-		maybe = &call{0, nil}
+func (m *tMock) trackCall(calledName string, args ...any) {
+	calls := m.allCalls[calledName]
+	if calls == nil {
+		calls = &call{0, nil}
 	}
 
-	newCall := *maybe
-	newCall.count++
+	calls.count++
 	if args != nil {
-		newCall.args = args
+		calls.args = &args
 	}
 
-	mock.calls[calledName] = &newCall
+	m.allCalls[calledName] = calls
 }
 
-func mockTesting(t *testing.T) *tMock {
+func mockTesting(t T) *tMock {
 	return &tMock{t, make(map[string]*call)}
 }
 
-func (mock *tMock) shouldBeCalledTimes(times int, callName string) {
-	mock.real.Helper()
+func (m *tMock) shouldBeCalledTimes(times int, callName string) {
+	m.real.Helper()
 
-	theCall := mock.calls[callName]
-	if theCall == nil {
-		mock.logAndFail(callName, "was never called.")
+	theCall := m.allCalls[callName]
+	if theCall == nil && times > 0 {
+		m.logAndFail(callName, "was never called.")
 	}
 
-	if theCall.count != times {
-		mock.logAndFail("Incorrect call count for:", callName, "wanted:", times, "got:", theCall.count)
-	}
-}
-
-func (mock *tMock) shouldBeCalled(callName string) {
-	mock.shouldBeCalledTimes(1, callName)
-}
-
-func (mock *tMock) shouldBeCalledWith(callName string, args ...any) {
-	mock.shouldBeCalled(callName)
-
-	if len(mock.calls[callName].args) != len(args) {
-		mock.logAndFail(callName, "was called with too few args", args, "Wanted:", len(args), "got:", len(mock.calls[callName].args))
-	}
-
-	for index, arg := range args {
-		if mock.calls[callName].args[index] != arg {
-			mock.logAndFail(callName, "was not called with", arg)
-		}
+	if theCall != nil && theCall.count != times {
+		m.logAndFail("Incorrect call count for:", callName, "wanted:", times, "got:", theCall.count)
 	}
 }
 
-func (mock *tMock) shouldBeCalledWithSome(callName string, args ...any) {
-	mock.shouldBeCalled(callName)
+func (m *tMock) shouldBeCalled(callName string) {
+	m.real.Helper()
+	m.shouldBeCalledTimes(1, callName)
+}
+
+func (m *tMock) shouldNotBeCalled(callName string) {
+	m.real.Helper()
+	m.shouldBeCalledTimes(0, callName)
+}
+
+func (m *tMock) shouldBeCalledWith(callName string, args ...any) {
+	m.real.Helper()
+	m.shouldBeCalled(callName)
+	if !cmp.Equal(*m.allCalls[callName].args, args) {
+		m.logAndFail(callName, "was not called with", args, "; it was called with", *m.allCalls[callName].args)
+	}
+}
+
+func (m *tMock) shouldBeCalledWithSome(callName string, args ...any) {
+	m.shouldBeCalled(callName)
 
 	for _, arg := range args {
-		if !slices.Contains(mock.calls[callName].args, arg) {
-			mock.logAndFail(callName, "was not called with", arg)
+		if !slices.Contains(*m.allCalls[callName].args, arg) {
+			m.logAndFail(callName, "was not called with", arg)
 		}
 	}
 }
 
-func logAndFail(t *testing.T, args ...any) {
-	t.Helper()
-	t.Error(args...)
-	t.FailNow()
+func (m *tMock) logAndFail(args ...any) {
+	m.real.Helper()
+	m.real.Error(args...)
+	m.real.FailNow()
 }
 
-func (mock *tMock) logAndFail(args ...any) {
-	mock.real.Helper()
-	logAndFail(mock.real, args...)
+func (m *tMock) shouldFailTest(failureMessage ...any) {
+	m.real.Helper()
+	m.shouldBeCalled("FailNow")
+	m.shouldBeCalledWith("Log", failureMessage...)
+}
+
+func (m *tMock) shouldNotFailTest() {
+	m.real.Helper()
+	m.shouldNotBeCalled("Fail")
+	m.shouldNotBeCalled("FailNow")
+	m.shouldNotBeCalled("Failed")
+	m.shouldNotBeCalled("Error")
+	m.shouldNotBeCalled("Errorf")
+	m.shouldNotBeCalled("Fatal")
+	m.shouldNotBeCalled("Fatalf")
+	m.shouldNotBeCalled("Skip")
+	m.shouldNotBeCalled("SkipNow")
+	m.shouldNotBeCalled("Skipped")
+	m.shouldNotBeCalled("Skipf")
 }

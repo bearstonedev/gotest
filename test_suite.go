@@ -29,7 +29,7 @@ func (i *runner) Test(name string, test TestBody) TestRunner {
 }
 
 func (i *runner) Scenarios() Parameterized {
-	return createParameterized(i.T)
+	return createParameterized(i)
 }
 
 type ConfigurableTestRunner interface {
@@ -55,5 +55,6 @@ type T interface {
 	Helper()
 	Log(...any)
 	FailNow()
+	Error(...any)
 	Run(name string, f func(t *testing.T)) bool
 }
