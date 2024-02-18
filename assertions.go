@@ -44,16 +44,12 @@ func (a *assertions) True(test bool, message ...any) {
 	}
 }
 
+func (a *assertions) False(test bool, message ...any) {
+	a.True(!test, message...)
+}
+
 func (a *assertions) prependTestName(message *[]any) *[]any {
 	prefix := &[]any{"Test", "\"" + a.testName + "\"", "failed:"}
 	messageWithPrefix := append(*prefix, *message...)
 	return &messageWithPrefix
-}
-
-func (a *assertions) False(test bool, message ...any) {
-	a.Helper()
-	if test {
-		a.Log(a.testName, message)
-		a.FailNow()
-	}
 }

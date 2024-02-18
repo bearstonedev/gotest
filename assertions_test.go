@@ -54,16 +54,24 @@ func TestAssertions_Equality(t *testing.T) {
 		})
 }
 
-func TestAssertions_True(t *testing.T) {
-	Tests(t).Test("should pass when true", func(asserts Assertions) {
-		sut := asserts.(TestableAssertions)
-		mm := sut.createMockT()
-		message := "Expected true to be true"
-		sut.True(true, message)
-		mm.shouldBeCalledTimes(1, "Helper")
-		mm.shouldNotFailTest()
-		sut.True(false, message)
-		mm.shouldBeCalledTimes(2, "Helper")
-		mm.shouldFailTest("Test", "\""+sut.getTestName()+"\"", "failed:", message)
-	})
+func TestAssertions_TrueAndFalse(t *testing.T) {
+	Tests(t).Scenarios().
+		Scenario("true should be true", Assertions.True, true, "Expected true to be true").
+		Scenario("false should be false", Assertions.False, false, "Expected false to be false").
+		Test(func(asserts Assertions, scenario []any) {
+			sut := asserts.(TestableAssertions)
+			mm := sut.createMockT()
+
+			assertionUnderTest := scenario[0].(func(Assertions, bool, ...any))
+			expected := scenario[1].(bool)
+			message := scenario[2].(string)
+
+			assertionUnderTest(sut, expected, message)
+			mm.shouldBeCalledTimes(1, "Helper")
+			mm.shouldNotFailTest()
+
+			assertionUnderTest(sut, !expected, message)
+			mm.shouldBeCalledTimes(2, "Helper")
+			mm.shouldFailTest("Test", "\""+sut.getTestName()+"\"", "failed:", message)
+		})
 }
