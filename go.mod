@@ -1,6 +1,6 @@
 module github.com/bearstonedev/gotest
 
-go 1.21.6
+go 1.22.0
 
 retract (
 	v0.1.5 // Contains retractions
