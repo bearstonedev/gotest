@@ -2,8 +2,6 @@
 
 A simple test framework for Go, intended for TDD beginners and novice developers.
 
-[TOC]
-
 ## Goals
 
 ### :rabbit2: Make it easier to write tests first (TDD) by making tests easier to write.
@@ -16,7 +14,7 @@ A simple test framework for Go, intended for TDD beginners and novice developers
 - All tests are run in parallel, both to reduce boilerplate and to help enforce independent tests.
 - `t.FailNow`, `t.Log`, etc. are abstracted.
 
-### :children_crossing: Maintaining maximal compatibility with the existing Go toolset.
+### :children_crossing: Maintain maximal compatibility with the existing Go toolset.
 
 - Standard `go` commands should work as expected to automate testing.
 - Example: `go test -run 'SomeTestSuite/specific_scenario' -v` should produce the same result as with native Go tests.
