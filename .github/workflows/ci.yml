@@ -9,19 +9,18 @@ jobs:
         working-directory: .
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v2
+      - uses: actions/setup-go@v5
         with:
-          go-version: '^1.22.0'
+          go-version-file: 'go.mod'
+          check-latest: true
       - name: Install dependencies
-        run: |
-          go mod download
-          go get -t .
+        run: go get .
+      - name: Build
+        run: scripts/build-gotest.sh
       - name: Lint
         run: scripts/lint-gotest.sh
       - name: Run tests
         run: scripts/test-gotest.sh
-      - name: Build
-        run: scripts/build-gotest.sh
       - name: Validate examples
         run: scripts/validate-examples.sh
 
