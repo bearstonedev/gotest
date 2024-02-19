@@ -41,6 +41,10 @@ esac
 newVersionFull="v${newVersion[0]}.${newVersion[1]}.${newVersion[2]}"
 echo "New version: ${newVersionFull}"
 
+echo "Updating published.version with ${newVersionFull} ..."
+echo -n "${newVersion[0]}.${newVersion[1]}.${newVersion[2]}" > scripts/published.version
+git commit scripts/published.version -m "Upgrade to ${newVersionFull}" --no-verify && git push
+
 echo "Creating a new tag for ${newVersionFull} ..."
 git tag "${newVersionFull}"
 git push origin "${newVersionFull}"
@@ -48,6 +52,4 @@ git push origin "${newVersionFull}"
 echo "Updating Go proxy with ${newVersionFull} ..."
 GOPROXY=proxy.golang.org go list -m "github.com/bearstonedev/gotest@${newVersionFull}"
 
-echo "Updating published.version ..."
-echo -n "${newVersion[0]}.${newVersion[1]}.${newVersion[2]}" > scripts/published.version
 echo "Successfully published ${newVersionFull}!"
