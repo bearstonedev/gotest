@@ -1,60 +1,41 @@
 package gotest
 
-import (
-	"testing"
-)
-
 type TestRunner interface {
 	Test(string, TestBody) TestRunner
 	Scenarios() Parameterized
 }
 
-func Tests(t T) TestRunner {
+func Tests(t TWrapper) TestRunner {
 	t.Parallel()
-	return &runner{t, DefaultRunnerStrategy}
+	return &runner{t, GetRealRunStrategy(t)}
 }
 
 type runner struct {
-	T
-	runTest TestRunnerStrategy
+	TWrapper
+	runTest RunStrategy
 }
 
 type TestBody func(Assertions)
 
 func (i *runner) Test(name string, test TestBody) TestRunner {
-	i.Run(name, func(t *testing.T) {
-		i.runTest(t, name, test)
+	i.runTest(name, func(t TWrapper) {
+		asserts := createAssertions(t)
+		t.Parallel()
+		t.Helper()
+		test(asserts)
 	})
 	return i
 }
 
 func (i *runner) Scenarios() Parameterized {
-	return createParameterized(i)
+	return createParameterized(i, i)
 }
 
-type ConfigurableTestRunner interface {
-	TestRunner
-	ChangeTestRunnerStrategy(TestRunnerStrategy)
-}
-
-func (i *runner) ChangeTestRunnerStrategy(strategy TestRunnerStrategy) {
-	i.runTest = strategy
-}
-
-type TestRunnerStrategy func(T, string, TestBody)
-
-func DefaultRunnerStrategy(t T, name string, test TestBody) {
-	asserts := createAssertions(name, t)
-	t.Parallel()
-	t.Helper()
-	test(asserts)
-}
-
-type T interface {
+type TWrapper interface {
 	Parallel()
 	Helper()
 	Log(...any)
 	FailNow()
 	Error(...any)
-	Run(name string, f func(t *testing.T)) bool
+	Name() string
 }

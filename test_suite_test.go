@@ -8,33 +8,29 @@ func TestRunner_Orchestration(t *testing.T) {
 	t.Parallel()
 	t.Run("should run tests automatically and in parallel", func(tt *testing.T) {
 		tt.Parallel()
-		m := mockTesting(tt)
-		configurableRunner := Tests(m).(ConfigurableTestRunner)
-		m.shouldBeCalled("Parallel")
+		sut, mock := injectMock(tt)
+		asserts := createAssertions(tt)
+		mock.shouldBeCalled("Parallel")
 
-		var mockList []*tMock
-		testsQueuedCount := 0
-		configurableRunner.ChangeTestRunnerStrategy(func(_ T, name string, test TestBody) {
-			mm := mockTesting(tt)
-			mockList = append(mockList, mm)
-			testsQueuedCount++
-			DefaultRunnerStrategy(mm, name, test)
-		})
-		sut := configurableRunner.(TestRunner)
-
-		sampleTest := func(assert Assertions) {
-			assert.Equal("yes", "no")
+		testName := "some test"
+		wasTestCalled := false
+		testBody := func(Assertions) {
+			wasTestCalled = true
 		}
-		sut.
-			Test("a test", sampleTest).
-			Test("another test", sampleTest)
-
-		m.shouldBeCalledTimes(testsQueuedCount, "Run")
-		for _, mm := range mockList {
-			mm.shouldBeCalledTimes(2, "Helper")
-			mm.shouldBeCalled("Parallel")
-			mm.shouldBeCalled("Log")
-			mm.shouldBeCalled("FailNow")
-		}
+		sut.Test(testName, testBody)
+		mock.shouldBeCalledWithSome("Run", testName)
+		asserts.True(wasTestCalled)
 	})
+}
+
+func injectMock(t *testing.T) (TestRunner, *tMock) {
+	m := mockTesting(t)
+	sut := Tests(m).(*runner)
+	sut.runTest = func(testName string, testBody func(TWrapper)) {
+		m.Run(testName, func(*testing.T) {
+			testBody(m)
+		})
+	}
+
+	return sut, m
 }

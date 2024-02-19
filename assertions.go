@@ -11,18 +11,17 @@ type Assertions interface {
 }
 
 type assertions struct {
-	testName string
-	T
+	TWrapper
 }
 
-func createAssertions(testName string, t T) Assertions {
-	return &assertions{testName, t}
+func createAssertions(t TWrapper) Assertions {
+	return &assertions{t}
 }
 
 func (a *assertions) Equal(lhs any, rhs any) {
 	a.Helper()
 	if !cmp.Equal(lhs, rhs) {
-		a.Log(a.testName, "Expected", lhs, "to be equal to", rhs)
+		a.Log(a.Name(), "Expected", lhs, "to be equal to", rhs)
 		a.FailNow()
 	}
 }
@@ -30,7 +29,7 @@ func (a *assertions) Equal(lhs any, rhs any) {
 func (a *assertions) NotEqual(lhs any, rhs any) {
 	a.Helper()
 	if cmp.Equal(lhs, rhs) {
-		a.Log(a.testName, "Expected", lhs, "not to be equal to", rhs)
+		a.Log(a.Name(), "Expected", lhs, "not to be equal to", rhs)
 		a.FailNow()
 	}
 }
@@ -49,7 +48,7 @@ func (a *assertions) False(test bool, message ...any) {
 }
 
 func (a *assertions) prependTestName(message *[]any) *[]any {
-	prefix := &[]any{"Test", "\"" + a.testName + "\"", "failed:"}
+	prefix := &[]any{"Test", "\"" + a.Name() + "\"", "failed:"}
 	messageWithPrefix := append(*prefix, *message...)
 	return &messageWithPrefix
 }

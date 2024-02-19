@@ -12,11 +12,11 @@ type call struct {
 }
 
 type tMock struct {
-	real     T
+	real     TWrapper
 	allCalls map[string]*call
 }
 
-var _ T = (*tMock)(nil)
+var _ TWrapper = (*tMock)(nil)
 
 func (m *tMock) Error(args ...any) {
 	m.trackCall("Error", args)
@@ -44,6 +44,11 @@ func (m *tMock) Parallel() {
 	m.incrementCallCount("Parallel")
 }
 
+func (m *tMock) Name() string {
+	m.incrementCallCount("Name")
+	return m.real.Name()
+}
+
 func (m *tMock) incrementCallCount(calledName string) {
 	m.trackCall(calledName, nil)
 }
@@ -62,7 +67,7 @@ func (m *tMock) trackCall(calledName string, args ...any) {
 	m.allCalls[calledName] = calls
 }
 
-func mockTesting(t T) *tMock {
+func mockTesting(t TWrapper) *tMock {
 	return &tMock{t, make(map[string]*call)}
 }
 

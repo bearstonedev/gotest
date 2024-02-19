@@ -3,5 +3,6 @@
 set -Eeuo pipefail
 
 cd examples
-go clean && go build -o build-test-examples && go test
+go test
+go clean && go build -o build-test-examples
 rm build-test-examples

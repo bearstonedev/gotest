@@ -3,20 +3,20 @@ package gotest
 import (
 	"strconv"
 	"strings"
-	"testing"
 )
 
 type Parameterized interface {
 	Scenario(string, ...any) Parameterized
-	Test(func(Assertions, []any)) TestRunner
+	Test(func(Assertions, ...any)) TestRunner
 }
 
-func createParameterized(runner *runner) *parameterized {
-	return &parameterized{runner, make([]scenario, 0)}
+func createParameterized(runner TestRunner, t TWrapper) *parameterized {
+	return &parameterized{t, runner, make([]scenario, 0)}
 }
 
 type parameterized struct {
-	*runner
+	TWrapper
+	runner    TestRunner
 	scenarios []scenario
 }
 
@@ -30,7 +30,7 @@ func (p *parameterized) Scenario(name string, args ...any) Parameterized {
 	return p
 }
 
-func (p *parameterized) Test(body func(Assertions, []any)) TestRunner {
+func (p *parameterized) Test(body func(Assertions, ...any)) TestRunner {
 	p.Helper()
 
 	parameterCount := 0
@@ -49,13 +49,10 @@ func (p *parameterized) Test(body func(Assertions, []any)) TestRunner {
 			name = *testScenario.name
 		}
 
-		p.Run(name, func(t *testing.T) {
+		p.runner.Test(name, func(a Assertions) {
 			testScenarioCopy := testScenario
-			asserts := createAssertions(name, t)
-			t.Parallel()
-			t.Helper()
-			asserts.True(len(testScenarioCopy.args) == parameterCount, "Parameter count for scenario doesn't match prior scenarios.")
-			body(asserts, testScenarioCopy.args)
+			a.True(len(testScenarioCopy.args) == parameterCount, "Parameter count for scenario doesn't match prior scenarios.")
+			body(a, testScenarioCopy.args...)
 		})
 	}
 

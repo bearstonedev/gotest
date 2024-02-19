@@ -50,7 +50,7 @@ func TestShouldSubtractTwoNumbers(t *testing.T) {
 		Scenario("2 - 2 should be 0", 2, 2, 0).
 		Scenario("1 - 0 should be 1", 1, 0, 1).
 		Scenario("0 - 1 should be -1", 0, 1, -1).
-		Test(func(shouldBe Assertions, args []any) {
+		Test(func(shouldBe Assertions, args ...any) {
 			expectedOutput := args[2].(int)
 			actualOutput := sut.Subtract(args[0].(int), args[1].(int))
 			shouldBe.Equal(actualOutput, expectedOutput)
