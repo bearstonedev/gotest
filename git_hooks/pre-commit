@@ -1,8 +1,9 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
 cp git_hooks/pre-commit .git/hooks/pre-commit
 
-go clean && go build -o precommit-build-test && go test -coverprofile=coverage.out
-rm precommit-build-test
-
-cd examples
-go clean && go build -o precommit-build-test && go test
-rm precommit-build-test
+for f in scripts/*.sh; do
+  bash "$f"
+done

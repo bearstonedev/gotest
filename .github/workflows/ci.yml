@@ -1,0 +1,27 @@
+name: deployment-pipeline
+run-name: ${{ github.actor }} pushed a commit
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '^1.22.0'
+      - name: Install dependencies
+        run: |
+          go mod download
+          go get -t .
+      - name: Lint
+        run: scripts/lint-gotest.sh
+      - name: Run tests
+        run: scripts/test-gotest.sh
+      - name: Build
+        run: scripts/build-gotest.sh
+      - name: Validate examples
+        run: scripts/validate-examples.sh
+

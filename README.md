@@ -145,4 +145,4 @@ Working examples are shown here: [gotest/examples](examples/tests-example_test.g
 
 ## Version
 
-The currently published version can be found [here](scripts/published.version).
+The currently published version can be found [here](publish-update/published.version).
