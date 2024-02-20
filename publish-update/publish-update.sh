@@ -29,8 +29,15 @@ newVersion=("${currentVersion[@]}")
 revision=${1^^}
 case ${revision} in
   MAJOR|MINOR|PATCH) echo "Revision: ${revision}";;&
-  MAJOR) (( ++newVersion[0] ));;
-  MINOR) (( ++newVersion[1] ));;
+  MAJOR)
+    (( ++newVersion[0] ))
+    newVersion[1]=0
+    newVersion[2]=0
+    ;;
+  MINOR)
+    (( ++newVersion[1] ))
+    newVersion[2]=0
+    ;;
   PATCH) (( ++newVersion[2] ));;
   *)
     echo 'Must specify one of: MAJOR, MINOR, PATCH. Aborting update.'
