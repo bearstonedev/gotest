@@ -52,4 +52,10 @@ git push origin "${newVersionFull}"
 echo "Updating Go proxy with ${newVersionFull} ..."
 GOPROXY=proxy.golang.org go list -m "github.com/bearstonedev/gotest@${newVersionFull}"
 
+echo "Upgrading examples module to ${newVersionFull} ..."
+cd examples
+go get "github.com/bearstonedev/gotest@${newVersionFull}"
+go mod tidy
+git commit go.mod go.sum -m "ci: upgrade examples to ${newVersionFull}" && git push
+
 echo "Successfully published ${newVersionFull}!"
