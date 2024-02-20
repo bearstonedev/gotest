@@ -22,7 +22,7 @@ if [[ ${#} -ne 1 ]]; then
 fi
 
 currentVersion=()
-IFS="." read -r -a currentVersion <<< "$(awk '{print $1}' scripts/published.version)"
+IFS="." read -r -a currentVersion <<< "$(awk '{print $1}' publish-update/published.version)"
 echo "Current version: v${currentVersion[0]}.${currentVersion[1]}.${currentVersion[2]}"
 
 newVersion=("${currentVersion[@]}")
@@ -42,8 +42,8 @@ newVersionFull="v${newVersion[0]}.${newVersion[1]}.${newVersion[2]}"
 echo "New version: ${newVersionFull}"
 
 echo "Updating published.version with ${newVersionFull} ..."
-echo -n "${newVersion[0]}.${newVersion[1]}.${newVersion[2]}" > scripts/published.version
-git commit scripts/published.version -m "ci: upgrade to ${newVersionFull}" --no-verify && git push
+echo -n "${newVersion[0]}.${newVersion[1]}.${newVersion[2]}" > publish-update/published.version
+git commit publish-update/published.version -m "ci: upgrade to ${newVersionFull}" --no-verify && git push
 
 echo "Creating a new tag for ${newVersionFull} ..."
 git tag "${newVersionFull}"
