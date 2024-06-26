@@ -1,4 +1,2 @@
-github.com/bearstonedev/gotest v0.4.0 h1:ENyaPezaQuCBHYo96N2m0f40zZ3xGoUu+D6xBuTshCA=
-github.com/bearstonedev/gotest v0.4.0/go.mod h1:AODE/Op5XWghhTQTvE4U42ZzboNlxqIKdKuucp0HiY0=
-github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
-github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
+github.com/bearstonedev/gotest v0.5.0 h1:+2k08Y5sW20snLlY62jtKYF+ANwka1CufkwtW5mohfU=
+github.com/bearstonedev/gotest v0.5.0/go.mod h1:Gl3MgAOUUzdmwvMTUW7/J6prs5ls2pqoP1RKJoOtAbU=
