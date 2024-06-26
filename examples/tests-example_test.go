@@ -5,54 +5,30 @@ import (
 	"testing"
 )
 
-func TestShouldAddTwoNumbers(t *testing.T) {
-	systemUnderTest := CreateCalculator()
-	Tests(t).Test("1 + 1 should be 2", func(shouldBe Assertions) {
-		expectedOutput := 2
-		actualOutput := systemUnderTest.Add(1, 1)
-		shouldBe.Equal(actualOutput, expectedOutput)
-	}).Test("1 + 2 should be 3", func(shouldBe Assertions) {
-		expectedOutput := 3
-		actualOutput := systemUnderTest.Add(1, 2)
-		shouldBe.Equal(actualOutput, expectedOutput)
-	}).Test("2 + 2 should be 4", func(shouldBe Assertions) {
-		expectedOutput := 4
-		actualOutput := systemUnderTest.Add(2, 2)
-		shouldBe.Equal(actualOutput, expectedOutput)
-	}).Test("-1 + -1 should be -2", func(shouldBe Assertions) {
-		expectedOutput := -2
-		actualOutput := systemUnderTest.Add(-1, -1)
-		shouldBe.Equal(actualOutput, expectedOutput)
-	}).Test("-1 + 1 should be 0", func(shouldBe Assertions) {
-		expectedOutput := 0
-		actualOutput := systemUnderTest.Add(-1, 1)
-		shouldBe.Equal(actualOutput, expectedOutput)
-	})
+func Test_ShouldAddTwoNumbers(t *testing.T) {
+	calc := CreateCalculator()
+	I := Expec(t)
+
+	I.Expect(calc.Add(1, 1)).ToBe(2)
+	I.Expect(calc.Add(1, 2)).ToBe(3)
+	I.Expect(calc.Add(2, 2)).ToBe(4)
+	I.Expect(calc.Add(-1, -1)).ToBe(-2)
+	I.Expect(calc.Add(-1, 1)).ToBe(0)
 }
 
-func TestShouldCompareTwoNumbers(t *testing.T) {
-	sut := CreateCalculator()
-	Tests(t).
-		Test("2 should be greater than 1", func(shouldBe Assertions) {
-			shouldBe.True(sut.IsGreaterThan(2, 1))
-		}).
-		Test("1 should not be greater than 2", func(shouldBe Assertions) {
-			shouldBe.False(sut.IsGreaterThan(1, 2))
-		})
+func Test_ShouldCompareTwoNumbers(t *testing.T) {
+	calc := CreateCalculator()
+	I := Expec(t)
+	I.Expect(calc.IsGreaterThan(2, 1)).As("2 > 1").ToBe(true)
+	I.Expect(calc.IsGreaterThan(1, 2)).As("1 > 2").ToBe(false)
 }
 
-func TestShouldSubtractTwoNumbers(t *testing.T) {
+func Test_ShouldSubtractTwoNumbers(t *testing.T) {
 	sut := CreateCalculator()
-	Tests(t).
-		Scenarios().
-		Scenario("", 1, 1, 0).
-		Scenario("1 - 2 should be -1", 1, 2, -1).
-		Scenario("2 - 2 should be 0", 2, 2, 0).
-		Scenario("1 - 0 should be 1", 1, 0, 1).
-		Scenario("0 - 1 should be -1", 0, 1, -1).
-		Test(func(shouldBe Assertions, args ...any) {
-			expectedOutput := args[2].(int)
-			actualOutput := sut.Subtract(args[0].(int), args[1].(int))
-			shouldBe.Equal(actualOutput, expectedOutput)
-		})
+	I := Expec(t)
+	I.Expect(sut.Subtract(1, 2)).ToBe(-1).
+		Expect(sut.Subtract(1, 2)).ToBe(-1).
+		Expect(sut.Subtract(2, 2)).ToBe(0).
+		Expect(sut.Subtract(1, 0)).ToBe(1).
+		Expect(sut.Subtract(0, 1)).ToBe(-1)
 }
